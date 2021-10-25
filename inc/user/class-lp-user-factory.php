@@ -506,6 +506,7 @@ class LP_User_Factory {
 					$user_item_data['status'] = LP_COURSE_PURCHASED;
 				}
 			} else { // Enroll course free
+
 				// Set data for create user_item
 				$user_item_data['status']     = LP_COURSE_ENROLLED;
 				$user_item_data['graduation'] = LP_COURSE_GRADUATION_IN_PROGRESS;
@@ -526,16 +527,72 @@ class LP_User_Factory {
 	 * Handle something when Manual Order completed
 	 */
 	protected static function handle_item_manual_order_completed( LP_Order $order, LP_User $user, $item ) {
+		global $wpdb;
+
+		$lp_user_items_db = LP_User_Items_DB::getInstance();
+
 		try {
 			$course      = learn_press_get_course( $item['course_id'] );
 			$auto_enroll = LP_Settings::is_auto_start_course();
 
+			$filter          = new LP_User_Items_Filter();
+			$filter->user_id = $user->get_id();
+			$filter->item_id = $item['course_id'];
+			$user_course     = $lp_user_items_db->get_last_user_course( $filter );
+
+			$latest_user_item_id   = 0;
+
+			if ( $user_course && isset( $user_course->user_item_id ) ) {
+				$latest_user_item_id = $user_course->user_item_id;
+			}
 			// Data user_item for save database
 			$user_item_data = [
 				'user_id' => $user->get_id(),
 				'item_id' => $course->get_id(),
 				'ref_id'  => $order->get_id(),
 			];
+
+			$wpdb->delete(
+				$wpdb->learnpress_user_items,
+				array(
+					'user_item_id' => $latest_user_item_id,
+				),
+				array( '%d' )
+			);
+
+			/** Get list user_item_id for lesson, quiz... by course user_item_id in table learnpress_user_items */
+			$user_item_ids = $wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT user_item_id FROM $wpdb->learnpress_user_items
+						WHERE parent_id=%d
+						",
+					$latest_user_item_id
+				)
+			);
+
+			/** Delete all lesson, quiz... by course parent user_item_id */
+			$wpdb->delete(
+				$wpdb->learnpress_user_items,
+				array(
+					'parent_id' => absint( $latest_user_item_id ),
+				),
+				array( '%d' )
+			);
+
+			/** Delete all user_item_meta for lesson, quiz... */
+			if ( ! empty( $user_item_ids ) ) {
+				foreach ( $user_item_ids as $user_item_id ) {
+					$wpdb->delete(
+						$wpdb->learnpress_user_itemmeta,
+						array(
+							'learnpress_user_item_id' => absint( $user_item_id ),
+						),
+						array( '%d' )
+					);
+
+					LP_User_Items_Result_DB::instance()->delete( absint( $user_item_id ) );
+				}
+			}
 
 			if ( $auto_enroll ) {
 				$user_item_data['status']     = LP_COURSE_ENROLLED;
