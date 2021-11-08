@@ -102,8 +102,8 @@ class LP_User_Items_DB extends LP_Database {
 		$query_extra = '';
 
 		// Check valid user.
-		if ( ! is_user_logged_in() || ( ! current_user_can( 'administrator' ) && get_current_user_id() != $filter->user_id ) ) {
-			throw new Exception( __( 'User invalid!', 'learnpress' ) );
+		if ( ! is_user_logged_in() || ( ! current_user_can( ADMIN_ROLE ) && get_current_user_id() != $filter->user_id ) ) {
+			throw new Exception( __( 'User invalid!', 'learnpress' ) . ' | ' . __FUNCTION__ );
 		}
 
 		if ( - 1 < $filter->limit ) {
@@ -402,6 +402,206 @@ class LP_User_Items_DB extends LP_Database {
 		$this->check_execute_has_error();
 
 		return $result;
+	}
+
+	/**
+	 * Get items is course has user
+	 *
+	 * @param LP_User_Items_Filter $filter $filter->user_id, $filter->item_id
+	 *
+	 * @throws Exception
+	 * @author tungnx
+	 * @since 4.1.4
+	 * @version 1.0.0
+	 */
+	public function get_ids_course_user( LP_User_Items_Filter $filter ): array {
+		$query = $this->wpdb->prepare(
+			"SELECT user_item_id FROM {$this->tb_lp_user_items}
+			WHERE user_id = %d
+			AND item_id = %d
+			AND item_type = %s
+			",
+			$filter->user_id,
+			$filter->item_id,
+			LP_COURSE_CPT
+		);
+
+		return $this->wpdb->get_col( $query );
+	}
+
+	/**
+	 * Get items of course has user
+	 *
+	 * @param LP_User_Items_Filter $filter user_item_ids
+	 *
+	 * @throws Exception
+	 * @since 4.1.4
+	 * @version 1.0.0
+	 */
+	public function get_item_ids_of_user_course( LP_User_Items_Filter $filter ): array {
+		if ( empty( $filter->user_item_ids ) ) {
+			return [];
+		}
+
+		$where = 'WHERE 1=1 ';
+
+		$where .= $this->wpdb->prepare(
+			'AND parent_id IN(' . LP_Helper::db_format_array( $filter->user_item_ids, '%d' ) . ')',
+			$filter->user_item_ids
+		);
+
+		return $this->wpdb->get_col(
+			"SELECT user_item_id FROM {$this->tb_lp_user_items}
+			{$where}
+			"
+		);
+	}
+
+	/**
+	 * Remove rows IN user_item_ids
+	 *
+	 * @param LP_User_Items_Filter $filter $filter->user_item_ids, $filter->user_id
+	 *
+	 * @throws Exception
+	 * @since 4.1.4
+	 * @version 1.0.0
+	 */
+	public function remove_user_item_ids( LP_User_Items_Filter $filter ) {
+		// Check valid user.
+		if ( ! is_user_logged_in() || ( ! current_user_can( ADMIN_ROLE ) && get_current_user_id() != $filter->user_id ) ) {
+			throw new Exception( __( 'User invalid!', 'learnpress' ) . ' | ' . __FUNCTION__ );
+		}
+
+		if ( empty( $filter->user_item_ids ) ) {
+			return 1;
+		}
+
+		$where = 'WHERE 1=1 ';
+
+		$where .= $this->wpdb->prepare(
+			'AND user_item_id IN(' . LP_Helper::db_format_array( $filter->user_item_ids, '%d' ) . ')',
+			$filter->user_item_ids
+		);
+
+		return $this->wpdb->query(
+			"DELETE FROM {$this->tb_lp_user_items}
+			{$where}
+			"
+		);
+	}
+
+	/**
+	 * Remove user_itemmeta has list user_item_ids
+	 *
+	 * @param LP_User_Items_Filter $filter $filter->user_item_ids, $filter->user_id
+	 *
+	 * @throws Exception
+	 * @since 4.1.4
+	 * @version 1.0.0
+	 */
+	public function remove_user_itemmeta( LP_User_Items_Filter $filter ) {
+		// Check valid user.
+		if ( ! is_user_logged_in() || ( ! current_user_can( ADMIN_ROLE ) && get_current_user_id() != $filter->user_id ) ) {
+			throw new Exception( __( 'User invalid!', 'learnpress' ) . ' | ' . __FUNCTION__ );
+		}
+
+		if ( empty( $filter->user_item_ids ) ) {
+			return 1;
+		}
+
+		$where = 'WHERE 1=1 ';
+
+		$where .= $this->wpdb->prepare(
+			'AND learnpress_user_item_id IN(' . LP_Helper::db_format_array( $filter->user_item_ids, '%d' ) . ')',
+			$filter->user_item_ids
+		);
+
+		return $this->wpdb->query(
+			"DELETE FROM {$this->tb_lp_user_itemmeta}
+			{$where}
+			"
+		);
+	}
+
+	/**
+	 * Delete user_item_ids by user_id and course_id
+	 *
+	 * @param int $user_id
+	 * @param int $course_id
+	 * @author tungnx
+	 * @since 4.1.4
+	 * @version 1.0.0
+	 */
+	public function delete_user_items_old( int $user_id = 0, int $course_id = 0 ) {
+		$lp_user_items_db     = LP_User_Items_DB::getInstance();
+		$lp_user_item_results = LP_User_Items_Result_DB::instance();
+
+		try {
+			// Check valid user.
+			if ( ! is_user_logged_in() || ( ! current_user_can( ADMIN_ROLE ) && get_current_user_id() != $user_id ) ) {
+				throw new Exception( __( 'User invalid!', 'learnpress' ) . ' | ' . __FUNCTION__ );
+			}
+
+			// Get all user_item_ids has user_id and course_id
+			$filter          = new LP_User_Items_Filter();
+			$filter->user_id = $user_id;
+			$filter->item_id = $course_id;
+
+			$user_course_ids = $lp_user_items_db->get_ids_course_user( $filter );
+
+			if ( empty( $user_course_ids ) ) {
+				return;
+			}
+
+			// Get user_item_ids has parent in $user_course_ids
+			$filter                = new LP_User_Items_Filter();
+			$filter->user_item_ids = $user_course_ids;
+			$user_item_ids         = $lp_user_items_db->get_item_ids_of_user_course( $filter );
+
+			$user_item_ids_concat = array_merge( $user_course_ids, $user_item_ids );
+
+			// Delete on tb lp_user_items
+			$filter                = new LP_User_Items_Filter();
+			$filter->user_item_ids = $user_item_ids_concat;
+			$filter->user_id       = $user_id;
+			$lp_user_items_db->remove_user_item_ids( $filter );
+
+			// Delete user_itemmeta
+			$lp_user_items_db->remove_user_itemmeta( $filter );
+
+			// Delete user_item_results
+			$lp_user_item_results->remove_user_item_results( $filter );
+		} catch ( Throwable $e ) {
+			error_log( $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Update user_id for lp_user_item with Order buy User Guest
+	 *
+	 * @param LP_User_Items_Filter $filter
+	 *
+	 * @return bool|int
+	 * @throws Exception
+	 */
+	public function update_user_id_by_order( LP_User_Items_Filter $filter ) {
+		// Check valid user.
+		if ( ! is_user_logged_in() || ( ! current_user_can( ADMIN_ROLE ) && get_current_user_id() != $filter->user_id ) ) {
+			throw new Exception( __( 'User invalid!', 'learnpress' ) . ' | ' . __FUNCTION__ );
+		}
+
+		$query = $this->wpdb->prepare(
+			"UPDATE {$this->tb_lp_user_items}
+			SET user_id = %d
+			WHERE ref_type = %s
+			AND ref_id = %d
+			",
+			$filter->user_id,
+			LP_ORDER_CPT,
+			$filter->ref_id
+		);
+
+		return $this->wpdb->query( $query );
 	}
 }
 

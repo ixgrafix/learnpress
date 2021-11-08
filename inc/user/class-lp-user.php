@@ -41,6 +41,13 @@ class LP_User extends LP_Abstract_User {
 			$view->flag = true;
 
 			return $view;
+		} elseif ( ! is_user_logged_in() ) {
+			$view->message = __(
+				'This content is protected, please login, enroll course to view this content!',
+				'learnpress'
+			);
+
+			return $view;
 		}
 
 		if ( $course->is_publish() ) {
@@ -356,23 +363,23 @@ class LP_User extends LP_Abstract_User {
 				throw new Exception( $message );
 			}
 
-			if ( $this->has_purchased_course( $course_id ) ) {
-				// If the order contains course is processing
-				$order = $this->get_course_order( $course_id );
-				if ( $order && $order->get_status() === 'processing' ) {
-					$message = apply_filters(
-						'learn-press/order-processing-message',
-						__( 'Your order is waiting for processing', 'learnpress' )
-					);
+			// If the order contains course is processing
+			$order = $this->get_course_order( $course_id );
+			if ( $order && $order->get_status() === 'processing' ) {
+				$message = apply_filters(
+					'learn-press/order-processing-message',
+					__( 'Your order is waiting for processing', 'learnpress' )
+				);
 
-					if ( $message ) {
-						learn_press_display_message( $message );
-					}
-
-					throw new Exception( $message );
-				} else {
-					throw new Exception( 'Course is purchased' );
+				if ( $message ) {
+					learn_press_display_message( $message );
 				}
+
+				throw new Exception( $message );
+			}
+
+			if ( $this->has_purchased_course( $course_id ) ) {
+				throw new Exception( 'Course is purchased' );
 			}
 
 			$is_blocked_course  = 0 === $course->timestamp_remaining_duration();

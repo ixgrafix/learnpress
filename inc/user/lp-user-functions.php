@@ -86,20 +86,18 @@ function learn_press_get_current_user_id() {
  * @param bool $create_temp - Optional. Create temp user if user is not logged in.
  *
  * @return bool|LP_User|LP_User_Guest
+ * @editor tungnx
+ * @modify 4.1.4
+ * @version 1.0.1
  */
-function learn_press_get_current_user( $create_temp = true, $force_new = false ) {
-	static $current_user = false;
-
+function learn_press_get_current_user( $create_temp = true ) {
 	$user_id = get_current_user_id();
 
 	if ( $user_id ) {
-		if ( ! $current_user || $force_new ) {
-			$current_user = learn_press_get_user( $user_id, $force_new );
-		}
-
-		return $current_user;
+		return learn_press_get_user( $user_id );
 	}
 
+	// Return LP_User_Guest
 	return learn_press_get_user( 0 );
 }
 
@@ -122,7 +120,6 @@ if ( ! function_exists( 'learn_press_get_user' ) ) {
 		}
 
 		if ( ! $user_id && isset( LP()->session ) ) {
-
 			if ( ! LP()->session->guest_user_id ) {
 				LP()->session->set_customer_session_cookie( 1 );
 				LP()->session->guest_user_id = time();
@@ -1831,6 +1828,7 @@ function learn_press_rest_prepare_user_questions( array $question_ids = array(),
 	$instantCheck     = $args['instant_check'];
 	$quizStatus       = $args['quiz_status'];
 	$answered         = $args['answered'];
+	$status           = $args['status'] ?? '';
 	$questions        = array();
 
 	if ( $question_ids ) {
@@ -1844,7 +1842,7 @@ function learn_press_rest_prepare_user_questions( array $question_ids = array(),
 			$theHint        = $question->get_hint();
 			$theExplanation = '';
 
-			if ( $instantCheck ) {
+			if ( $instantCheck || $status == 'completed' ) {
 				$theExplanation = $question->get_explanation();
 				$checked        = in_array( $id, $checkedQuestions );
 				$hasExplanation = ! ! $theExplanation;
@@ -1868,7 +1866,7 @@ function learn_press_rest_prepare_user_questions( array $question_ids = array(),
 				$questionData['hint'] = $theHint;
 			}
 
-			if ( $checked && $theExplanation ) {
+			if ( $status == 'completed' || ( $checked && $theExplanation ) ) {
 				$questionData['explanation'] = $theExplanation;
 			}
 
@@ -2109,9 +2107,9 @@ add_action( 'learn-press/after-form-register-fields', 'lp_custom_register_fields
  */
 function lp_user_custom_register_fields( $user_id, $fields = array() ) {
 	if ( ! empty( $fields ) ) {
-		update_user_meta( $user_id, '_lp_custom_register', learnpress_clean( $fields ) );
+		update_user_meta( $user_id, '_lp_custom_register', LP_Helper::sanitize_params_submitted( $fields ) );
 	} elseif ( isset( $_POST['_lp_custom_register'] ) ) {
-		update_user_meta( $user_id, '_lp_custom_register', $_POST['_lp_custom_register'] );
+		update_user_meta( $user_id, '_lp_custom_register', LP_Helper::sanitize_params_submitted( $_POST['_lp_custom_register'] ) );
 	}
 }
 

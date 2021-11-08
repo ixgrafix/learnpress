@@ -4,7 +4,7 @@
  * Plugin URI: http://thimpress.com/learnpress
  * Description: LearnPress is a WordPress complete solution for creating a Learning Management System (LMS). It can help you to create courses, lessons and quizzes.
  * Author: ThimPress
- * Version: 4.1.4-beta-2
+ * Version: 4.1.4-beta-12
  * Author URI: http://thimpress.com
  * Requires at least: 5.6
  * Tested up to: 5.8
@@ -246,11 +246,13 @@ if ( ! class_exists( 'LearnPress' ) ) {
 			require_once 'inc/filters/class-lp-filter.php';
 			require_once 'inc/filters/class-lp-post-type-filter.php';
 			require_once 'inc/filters/class-lp-course-filter.php';
+			require_once 'inc/filters/class-lp-order-filter.php';
 			require_once 'inc/filters/class-lp-question-filter.php';
 			require_once 'inc/filters/class-lp-user-items-filter.php';
 
 			// Query Database .
 			require_once 'inc/databases/class-lp-db.php';
+			require_once 'inc/databases/class-lp-order-db.php';
 			require_once 'inc/databases/class-lp-course-db.php';
 			require_once 'inc/databases/class-lp-lesson-db.php';
 			require_once 'inc/databases/class-lp-section-db.php';
@@ -818,7 +820,7 @@ if ( ! class_exists( 'LearnPress' ) ) {
 					'LP4 require version Thim-core:',
 					$this->thim_core_version_require,
 					'<a href="https://thimpresswp.github.io/thim-core/thim-core.zip">latest version</a>',
-					'<a href="https://bit.ly/2SrsxUf">here</a>'
+					'<a href="https://docspress.thimpress.com/upgrade-database-how-to-fix-some-issue/">here</a>'
 				);
 				?>
 				<div class="notice notice-error">
