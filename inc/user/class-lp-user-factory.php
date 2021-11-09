@@ -261,9 +261,16 @@ class LP_User_Factory {
 		try {
 			$course      = learn_press_get_course( $item['course_id'] );
 			$auto_enroll = LP_Settings::is_auto_start_course();
+			$user_id     = $user->get_id();
+
+			if( $user->is_guest() ){
+				$user_id = (int) learn_press_get_request( 'order-customer' );
+				$order->set_user_id( $user_id );
+				$order->save();
+			}
 
 			$filter          = new LP_User_Items_Filter();
-			$filter->user_id = $user->get_id();
+			$filter->user_id = $user_id;
 			$filter->item_id = $item['course_id'];
 			$user_course     = $lp_user_items_db->get_last_user_course( $filter );
 
@@ -274,7 +281,7 @@ class LP_User_Factory {
 			}
 			// Data user_item for save database
 			$user_item_data = [
-				'user_id' => $user->get_id(),
+				'user_id' => $user_id,
 				'item_id' => $course->get_id(),
 				'ref_id'  => $order->get_id(),
 			];

@@ -586,9 +586,9 @@ class LP_User_Items_DB extends LP_Database {
 	 */
 	public function update_user_id_by_order( LP_User_Items_Filter $filter ) {
 		// Check valid user.
-		if ( ! is_user_logged_in() || ( ! current_user_can( ADMIN_ROLE ) && get_current_user_id() != $filter->user_id ) ) {
-			throw new Exception( __( 'User invalid!', 'learnpress' ) . ' | ' . __FUNCTION__ );
-		}
+		// if ( ! is_user_logged_in() || ( ! current_user_can( ADMIN_ROLE ) && get_current_user_id() != $filter->user_id ) ) {
+		// 	throw new Exception( __( 'User invalid!', 'learnpress' ) . ' | ' . __FUNCTION__ );
+		// }
 
 		$query = $this->wpdb->prepare(
 			"UPDATE {$this->tb_lp_user_items}

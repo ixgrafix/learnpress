@@ -139,6 +139,14 @@ class LP_Checkout {
 			if ( $user_id ) {
 				$order->set_user_id( $user_id );
 				$order->save();
+
+				if ( $order->is_completed() ) {
+					$lp_user_items_db = LP_User_Items_DB::getInstance();
+					$filter           = new LP_User_Items_Filter();
+					$filter->user_id  = $user_id;
+					$filter->ref_id   = $order->get_id();
+					$lp_user_items_db->update_user_id_by_order( $filter );
+				}
 			}
 		} catch ( Exception $ex ) {
 			if ( $ex->getCode() && $ex->getMessage() ) {
@@ -393,6 +401,13 @@ class LP_Checkout {
 
 			if ( $this->is_enable_guest_checkout() && $this->get_checkout_email() ) {
 				$order->set_checkout_email( $this->get_checkout_email() );
+			}
+
+			$user = get_user_by('email', $this->get_checkout_email() );
+
+			if( $order->is_guest() && $user ){
+				$user_id = $user->ID;
+				$order->set_user_id( $user_id );
 			}
 
 			$order_id = $order->save();
