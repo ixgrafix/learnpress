@@ -250,7 +250,12 @@ if ( ! class_exists( 'LP_Course_Post_Type' ) ) {
 			// course curd
 			$curd = new LP_Course_CURD();
 			// remove all items from each section and delete course's sections
-			$curd->delete( $post_id );
+			//$curd->delete( $post_id );
+			$curd->remove_course( $post_id );
+			//remove all row table lp_user by course_id
+			$lp_course_db = LP_Course_DB::getInstance();
+			$lp_course_db->delete_item_old( $post_id );
+
 		}
 
 		/**

@@ -430,6 +430,29 @@ class LP_User_Items_DB extends LP_Database {
 	}
 
 	/**
+	 * Get items is course
+	 *
+	 * @param LP_User_Items_Filter $filter->item_id
+	 *
+	 * @throws Exception
+	 * @author minhpd
+	 * @since 4.1.5
+	 * @version 1.0.0
+	 */
+	public function get_ids_course( LP_User_Items_Filter $filter ): array {
+		$query = $this->wpdb->prepare(
+			"SELECT user_item_id FROM {$this->tb_lp_user_items}
+			WHERE item_id = %d
+			AND item_type = %s
+			",
+			$filter->item_id,
+			LP_COURSE_CPT
+		);
+
+		return $this->wpdb->get_col( $query );
+	}
+
+	/**
 	 * Get items of course has user
 	 *
 	 * @param LP_User_Items_Filter $filter user_item_ids

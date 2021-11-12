@@ -279,6 +279,7 @@ class LP_User_Factory {
 			if ( $user_course && isset( $user_course->user_item_id ) ) {
 				$latest_user_item_id = $user_course->user_item_id;
 			}
+
 			// Data user_item for save database
 			$user_item_data = [
 				'user_id' => $user_id,

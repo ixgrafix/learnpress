@@ -351,16 +351,17 @@ class LP_User_CURD extends LP_Object_Data_CURD implements LP_Interface_CURD {
 			$orders                = array();
 			$post_status_in        = learn_press_get_order_statuses( true, true );
 			$post_status_in_format = array_fill( 0, sizeof( $post_status_in ), '%s' );
-
+			$user_id_str = $wpdb->prepare( '%"%d"%', $user_id );
 			// Get order by user
 			$sql_orders = $wpdb->prepare(
 				"
 				SELECT p.*
 				FROM {$wpdb->posts} p
-				INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND meta_key = %s AND meta_value = %d
+				INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND meta_key = %s AND (meta_value = %d OR meta_value like '%s')
 			",
 				'_user_id',
-				$user_id
+				$user_id,
+				$user_id_str,
 			);
 
 			/**
@@ -397,7 +398,7 @@ class LP_User_CURD extends LP_Object_Data_CURD implements LP_Interface_CURD {
 			);
 
 			$sql = $sql_orders /* . ' UNION ' . $sql_guest_orders */ . $sql_rest;
-
+			//print_r($sql);die('bbb');
 			$order_posts = $wpdb->get_results( $sql );
 
 			if ( $order_posts ) {
