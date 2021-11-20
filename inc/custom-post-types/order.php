@@ -601,7 +601,7 @@ if ( ! class_exists( 'LP_Order_Post_Type' ) ) {
 				$wp_query->set( 'orderby', 'date' );
 				$wp_query->set( 'order', 'desc' );
 			}
-			print_r($wp_query);die('bbb');
+
 			return $wp_query;
 		}
 
