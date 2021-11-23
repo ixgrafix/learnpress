@@ -248,14 +248,13 @@ if ( ! class_exists( 'LP_Course_Post_Type' ) ) {
 		 */
 		public function before_delete( int $post_id ) {
 			// course curd
-			$curd = new LP_Course_CURD();
-			// remove all items from each section and delete course's sections
-			//$curd->delete( $post_id );
-			$curd->remove_course( $post_id );
-			//remove all row table lp_user by course_id
-			$lp_course_db = LP_Course_DB::getInstance();
-			$lp_course_db->delete_item_old( $post_id );
-
+			//$curd = new LP_Course_CURD();
+			//$curd->remove_course( $post_id );
+			$course = learn_press_get_course( $post_id );
+			if ( ! $course ) {
+				return;
+			}
+			$course->delete_relate_data_when_delete_course();
 		}
 
 		/**
@@ -585,9 +584,22 @@ if ( ! class_exists( 'LP_Course_Post_Type' ) ) {
 						$html_items = array();
 						$post_types = get_post_types( null, 'objects' );
 
-						$stats_objects = $curd->count_items( $post_id, 'edit' );
+						// $stats_objects = $curd->count_items( $post_id, 'edit' );
 
-						if ( $stats_objects ) {
+						foreach ( learn_press_get_course_item_types() as $item_type ) {
+							$count_item = $course->count_items( $item_type );
+
+							if ( ! $count_item ) {
+								continue;
+							}
+
+							$post_type_object = $post_types[ $item_type ];
+							$singular_name    = $post_type_object->labels->singular_name;
+							$plural_name      = $post_type_object->label;
+							$html_items[]     = sprintf( _n( '<strong>%d</strong> ' . $singular_name, '<strong>%d</strong> ' . $plural_name, $count_item, 'learnpress' ), $count_item );
+						}
+
+						/*if ( $stats_objects ) {
 							foreach ( $stats_objects as $type => $count ) {
 								if ( ! $count || ! isset( $post_types[ $type ] ) ) {
 									continue;
@@ -598,7 +610,7 @@ if ( ! class_exists( 'LP_Course_Post_Type' ) ) {
 								$plural_name      = strtolower( $post_type_object->label );
 								$html_items[]     = sprintf( _n( '<strong>%d</strong> ' . $singular_name, '<strong>%d</strong> ' . $plural_name, $count, 'learnpress' ), $count );
 							}
-						}
+						}*/
 
 						$html_items = apply_filters( 'learn-press/course-count-items', $html_items );
 
