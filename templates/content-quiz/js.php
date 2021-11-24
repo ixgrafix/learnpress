@@ -39,7 +39,7 @@ if ( $user_quiz ) {
 
 	// If expiration time is specific then calculate total time
 	if ( $expiration_time && ! $expiration_time->is_null() ) {
-		$total_time = strtotime( $user_quiz->get_expiration_time() ) - strtotime( $user_quiz->get_start_time() );
+		$total_time = strtotime( $user_quiz->get_expiration_time()->get_raw_date() ) - strtotime( get_gmt_from_date($user_quiz->get_start_time()->get_raw_date(), 'Y-m-d H:i:s') );
 	}
 
 	$user_js = array(
@@ -52,7 +52,7 @@ if ( $user_quiz ) {
 
 	if ( isset( $total_time ) ) {
 		$user_js['total_time'] = $total_time;
-		$user_js['endTime']    = $expiration_time->toSql( false );
+		$user_js['endTime']    = $expiration_time->get_raw_date();
 	}
 
 	if ( $quiz_results ) {
