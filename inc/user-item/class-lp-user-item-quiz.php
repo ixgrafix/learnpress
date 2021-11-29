@@ -41,7 +41,7 @@ class LP_User_Item_Quiz extends LP_User_Item {
 	 * Add user answer to DB.
 	 *
 	 * @param int|array $id
-	 * @param mixed $values
+	 * @param mixed     $values
 	 *
 	 * @return array|bool|LP_Quiz_Results|mixed
 	 * @throws Exception
@@ -189,9 +189,9 @@ class LP_User_Item_Quiz extends LP_User_Item {
 	 * Calculate result of quiz.
 	 *
 	 * @param string $prop
-	 * @param bool $force - Optional. Force to refresh cache.
+	 * @param bool   $force - Optional. Force to refresh cache.
 	 *
-	 * Clear cache on
+	 *   Clear cache on
 	 * @see LP_REST_Users_Controller::start_quiz() | retake quiz
 	 *
 	 * @return LP_Quiz_Results|bool|mixed
@@ -211,11 +211,12 @@ class LP_User_Item_Quiz extends LP_User_Item {
 		$result    = $lp_quiz_cache->get_cache( $key_cache );
 
 		if ( false === $result || $force ) {
-			//$result = $this->_get_results();
+			// $result = $this->_get_results();
 
-			//if ( false === $result ) {
+			// if ( false === $result ) {
 			$result = $this->calculate_results();
-			//}
+			// }
+			//print_r( $this->get_data() );
 
 			$lp_quiz_cache->set_cache( $key_cache, $result );
 		}
@@ -375,6 +376,7 @@ class LP_User_Item_Quiz extends LP_User_Item {
 
 			if ( $this->get_status() === 'completed' ) {
 				$grade = $percent >= $this->get_quiz()->get_data( 'passing_grade' ) ? 'passed' : 'failed';
+				$this->_set_data( 'graduation', $grade );
 			}
 
 			$result['question_count'] = count( $questions );
