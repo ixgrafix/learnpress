@@ -1,48 +1,57 @@
 const path = require( 'path' );
-const webpack = require( 'webpack' );
-const tools = require( './tools/webpack' );
+const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
+const MergeIntoSingleFilePlugin = require( 'webpack-merge-and-include-globally' );
 
 module.exports = {
+	...defaultConfig,
 	entry: {
-		'./assets/js/dist/admin/editor/course': './assets/src/apps/js/admin/editor/course.js',
-		'./assets/js/dist/admin/editor/quiz': './assets/src/apps/js/admin/editor/quiz.js',
-		'./assets/js/dist/admin/editor/question': './assets/src/apps/js/admin/editor/question.js',
-		'./assets/js/dist/admin/pages/tools': './assets/src/apps/js/admin/pages/tools.js',
-		'./assets/js/dist/admin/pages/setup': './assets/src/apps/js/admin/pages/setup.js',
-		'./assets/js/dist/admin/pages/statistic': './assets/src/apps/js/admin/pages/statistic.js',
-		'./assets/js/dist/admin/pages/sync-data': './assets/src/apps/js/admin/pages/sync-data.js',
-		'./assets/js/dist/admin/pages/themes-addons': './assets/src/apps/js/admin/pages/themes-addons.js',
-		'./assets/js/dist/admin/pages/dashboard': './assets/src/apps/js/admin/pages/dashboard.js',
-		'./assets/js/dist/admin/pages/widgets': './assets/src/apps/js/admin/pages/widgets.js',
-		'./assets/js/dist/utils': './assets/src/js/utils/index.js',
+		'admin/editor/course': path.resolve( process.cwd(), 'assets/src/apps/js/admin/editor/course.js' ),
+		'admin/editor/quiz': path.resolve( process.cwd(), 'assets/src/apps/js/admin/editor/quiz.js' ),
+		'admin/editor/question': path.resolve( process.cwd(), 'assets/src/apps/js/admin/editor/question.js' ),
+		'admin/pages/tools': path.resolve( process.cwd(), 'assets/src/apps/js/admin/pages/tools.js' ),
+		'admin/pages/setup': path.resolve( process.cwd(), 'assets/src/apps/js/admin/pages/setup.js' ),
+		'admin/pages/statistic': path.resolve( process.cwd(), 'assets/src/apps/js/admin/pages/statistic.js' ),
+		'admin/pages/sync-data': path.resolve( process.cwd(), 'assets/src/apps/js/admin/pages/sync-data.js' ),
+		'admin/pages/themes-addons': path.resolve( process.cwd(), 'assets/src/apps/js/admin/pages/themes-addons.js' ),
+		'admin/pages/dashboard': path.resolve( process.cwd(), 'assets/src/apps/js/admin/pages/dashboard.js' ),
+		'admin/pages/widgets': path.resolve( process.cwd(), 'assets/src/apps/js/admin/pages/widgets.js' ),
+		utils: path.resolve( process.cwd(), 'assets/src/js/utils/index.js' ),
 	},
 	output: {
-		path: path.resolve( __dirname ),
-		filename: 'production' === process.env.NODE_ENV ? '[name].min.js' : '[name].js',
-	},
-	watch: false,
-	devtool: process.env.NODE_ENV === 'production' ? '' : 'source-map',
-	module: {
-		rules: [
-			{
-				test: /\.js$/,
-				exclude: /(node_modules|bower_components)/,
-				use: {
-					loader: 'babel-loader',
-					options: {
-						presets: [
-							'@babel/preset-env',
-						],
-						plugins: [
-						    '@babel/plugin-transform-async-to-generator',
-							'@babel/plugin-proposal-object-rest-spread',
-						],
-					},
-				},
-			},
-		],
+		...defaultConfig.output,
+		path: path.resolve( process.cwd(), 'assets/build' ),
+		publicPath: 'auto',
 	},
 	plugins: [
-		tools.mergeAndCompressJs,
+		...defaultConfig.plugins,
+		new MergeIntoSingleFilePlugin( {
+			files: {
+				'vendor/vue_libs.js': [
+					'./assets/src/js/vendor/vue/vue.js',
+					'./assets/src/js/vendor/vue/vuex.js',
+					'./assets/src/js/vendor/vue/vue-resource.js',
+				],
+				'vendor/plugins.all.js': [
+					'./assets/src/js/vendor/watch.js',
+					'./assets/src/js/vendor/jquery/jquery-scrollTo.js',
+					'./assets/src/js/vendor/jquery/jquery-timer.js',
+					'./assets/src/js/vendor/jquery/jquery.tipsy.js',
+				],
+				'vendor/chart.js': [
+					'./assets/src/js/vendor/chart.min.js',
+				],
+				'bundle.css': [
+					'./assets/src/css/vendor/jquery.tipsy.css',
+				],
+				'admin.bundle.css': [
+					'./assets/src/css/vendor/font-awesome.min.css',
+					'./assets/src/css/vendor/jquery.tipsy.css',
+				],
+			},
+			transform: {
+				'bundle.css': ( code ) => require( 'uglifycss' ).processString( code ),
+				'admin.bundle.css': ( code ) => require( 'uglifycss' ).processString( code ),
+			},
+		} ),
 	],
 };
