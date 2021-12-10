@@ -393,6 +393,15 @@ class LP_Jwt_Courses_V1_Controller extends LP_REST_Jwt_Posts_Controller {
 				case 'can_finish':
 					$data['can_finish'] = $this->check_can_finish( $course );
 					break;
+				case 'can_retake':
+					$data['can_retake'] = $this->check_can_retake( $id );
+					break;
+				case 'ratake_count':
+					$data['ratake_count'] = (int) $course->get_data( 'retake_count' );
+					break;
+				case 'rataken':
+					$data['rataken'] = $this->get_retaken_count( $id );
+					break;
 				case 'duration':
 					$data['duration'] = learn_press_get_post_translated_duration( $id, esc_html__( 'Lifetime', 'learnpress' ) );
 					break;
@@ -422,6 +431,50 @@ class LP_Jwt_Courses_V1_Controller extends LP_REST_Jwt_Posts_Controller {
 		return $data;
 	}
 
+	public function get_retaken_count( $id ) {
+		$user_id = get_current_user_id();
+
+		if ( ! $user_id ) {
+			return 0;
+		}
+
+		$user = learn_press_get_user( $user_id );
+
+		if ( ! $user ) {
+			return 0;
+		}
+
+		$user_course_data = $user->get_course_data( $id );
+
+		if ( ! $user_course_data ) {
+			return 0;
+		}
+
+		return absint( $user_course_data->get_retaken_count() );
+	}
+
+	public function check_can_retake( $id ) {
+		$user_id = get_current_user_id();
+
+		if ( ! $user_id ) {
+			return 0;
+		}
+
+		$user = learn_press_get_user( $user_id );
+
+		if ( $user ) {
+			$can_retake_times = $user->can_retry_course( $id );
+
+			if ( $can_retake_times ) {
+				return true;
+			}
+
+			return false;
+		}
+
+		return false;
+	}
+
 	public function get_course_rating( $id ) {
 		if ( ! function_exists( 'learn_press_get_course_rate' ) ) {
 			return false;
@@ -433,7 +486,13 @@ class LP_Jwt_Courses_V1_Controller extends LP_REST_Jwt_Posts_Controller {
 	}
 
 	public function check_can_finish( $course ) {
-		$user = learn_press_get_current_user();
+		$user_id = get_current_user_id();
+
+		if ( ! $user_id ) {
+			return false;
+		}
+
+		$user = learn_press_get_user( $user_id );
 
 		if ( $user && $course ) {
 			$check = $user->can_show_finish_course_btn( $course );
@@ -637,6 +696,12 @@ class LP_Jwt_Courses_V1_Controller extends LP_REST_Jwt_Posts_Controller {
 	}
 
 	public function get_course_meta( $id ) {
+		$user_id = get_current_user_id();
+
+		if ( ! $user_id ) {
+			return array();
+		}
+
 		if ( ! class_exists( 'LP_Meta_Box_Course' ) ) {
 			include_once LP_PLUGIN_PATH . 'inc/admin/views/meta-boxes/course/settings.php';
 		}
@@ -644,6 +709,7 @@ class LP_Jwt_Courses_V1_Controller extends LP_REST_Jwt_Posts_Controller {
 		$metabox = new LP_Meta_Box_Course();
 
 		$output = array();
+
 		foreach ( $metabox->metabox( $id ) as $key => $tab ) {
 			if ( isset( $tab['content'] ) ) {
 				foreach ( $tab['content'] as $meta_key => $object ) {
@@ -838,6 +904,24 @@ class LP_Jwt_Courses_V1_Controller extends LP_REST_Jwt_Posts_Controller {
 				'can_finish'        => array(
 					'description' => __( 'Can finish course', 'learnpress' ),
 					'type'        => 'boolean',
+					'context'     => array( 'view' ),
+					'readonly'    => true,
+				),
+				'can_retake'        => array(
+					'description' => __( 'Can retake course', 'learnpress' ),
+					'type'        => 'boolean',
+					'context'     => array( 'view' ),
+					'readonly'    => true,
+				),
+				'ratake_count'      => array(
+					'description' => __( 'Total retake', 'learnpress' ),
+					'type'        => 'integer',
+					'context'     => array( 'view' ),
+					'readonly'    => true,
+				),
+				'rataken'           => array(
+					'description' => __( 'Retaken', 'learnpress' ),
+					'type'        => 'integer',
 					'context'     => array( 'view' ),
 					'readonly'    => true,
 				),
