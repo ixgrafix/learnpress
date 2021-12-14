@@ -3,9 +3,7 @@
 	"version": "1.0.0",
 	"description": "[![Stories in Ready](https://badge.waffle.io/LearnPress/LearnPress.svg?label=ready&title=Ready)](http://waffle.io/LearnPress/LearnPress)",
 	"scripts": {
-		"test": "./vendor/bin/phpcs -d date.timezone=UTC",
 		"dev": "wp-scripts start --progress",
-		"dev-watch": "cross-env BABEL_ENV=default webpack --mode=development --watch",
 		"dev-packages": "cross-env BABEL_ENV=default webpack --config tools/build.packages.js --mode=development --watch",
 		"build-packages": "cross-env BABEL_ENV=default NODE_ENV=production webpack --config tools/build.packages.js --progress -p",
 		"build": "cross-env BABEL_ENV=default NODE_ENV=production webpack --progress -p",
@@ -13,7 +11,8 @@
 		"dev-build": "npm run build && npm run build-packages && gulp styles && npm run dev && npm run dev-packages",
 		"release": "npm run build && npm run build-packages && gulp release",
 		"babel": "cross-env NODE_ENV=production babel assets/src/apps/js",
-		"makepot": "wp i18n make-pot . --skip-audit --exclude=\"test,releases,build,tools,dist,node_modules,vendor,wordpress,\" --headers='{\"last-translator\":\"admin@email.com\",\"Report-Msgid-Bugs-To\":\"https://github.com/LearnPress/learnpress/issues\"}' languages/learnpress.pot"
+		"makepot": "wp i18n make-pot . --skip-audit --exclude=\"test,releases,build,tools,dist,node_modules,vendor,wordpress,\" --headers='{\"last-translator\":\"admin@email.com\",\"Report-Msgid-Bugs-To\":\"https://github.com/LearnPress/learnpress/issues\"}' languages/learnpress.pot",
+		"lint:php": "./vendor/bin/phpcs -d date.timezone=UTC"
 	},
 	"repository": {
 		"type": "git",
@@ -56,6 +55,7 @@
 		"gulp-vinyl-zip": "^2.2.1",
 		"gulp-wp-pot": "^2.5.0",
 		"read-file": "^0.2.0",
+		"sass": "^1.44.0",
 		"uglify-js": "^3.14.4",
 		"uglifycss": "0.0.29",
 		"webpack-merge-and-include-globally": "^2.3.4"

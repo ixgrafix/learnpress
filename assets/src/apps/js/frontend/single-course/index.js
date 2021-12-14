@@ -1,5 +1,4 @@
 import { Component } from '@wordpress/element';
-import Quiz from '@learnpress/quiz';
 
 import './store';
 

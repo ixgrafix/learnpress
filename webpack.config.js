@@ -16,6 +16,23 @@ module.exports = {
 		'admin/pages/dashboard': path.resolve( process.cwd(), 'assets/src/apps/js/admin/pages/dashboard.js' ),
 		'admin/pages/widgets': path.resolve( process.cwd(), 'assets/src/apps/js/admin/pages/widgets.js' ),
 		utils: path.resolve( process.cwd(), 'assets/src/js/utils/index.js' ),
+		'frontend/modal': path.resolve( process.cwd(), 'assets/src/apps/js/frontend/modal.js' ),
+		'frontend/single-course': path.resolve( process.cwd(), 'assets/src/apps/js/frontend/single-course.js' ),
+		'frontend/single-curriculum': path.resolve( process.cwd(), 'assets/src/apps/js/frontend/single-curriculum.js' ),
+		'frontend/question-types': path.resolve( process.cwd(), 'assets/src/apps/js/frontend/question-types.js' ),
+		'frontend/lesson': path.resolve( process.cwd(), 'assets/src/apps/js/frontend/lesson.js' ),
+		'frontend/quiz': path.resolve( process.cwd(), 'assets/src/apps/js/frontend/quiz.js' ),
+		'frontend/config': path.resolve( process.cwd(), 'assets/src/apps/js/frontend/lp-configs.js' ),
+		'frontend/custom': path.resolve( process.cwd(), 'assets/src/apps/js/frontend/custom.js' ),
+		'frontend/profile': path.resolve( process.cwd(), 'assets/src/apps/js/frontend/profile.js' ),
+		'frontend/widgets': path.resolve( process.cwd(), 'assets/src/apps/js/frontend/widgets.js' ),
+
+		// Style
+		// 'admin/admin': path.resolve( process.cwd(), 'assets/src/scss/admin/admin.scss' ),
+		// 'admin/setup': path.resolve( process.cwd(), 'assets/src/scss/admin/setup.scss' ),
+		// 'admin/statistic': path.resolve( process.cwd(), 'assets/src/scss/admin/statistic.scss' ),
+		'frontend/learnpress': path.resolve( process.cwd(), 'assets/src/scss/learnpress.scss' ),
+		'frontend/widget': path.resolve( process.cwd(), 'assets/src/scss/widgets.scss' ),
 	},
 	output: {
 		...defaultConfig.output,

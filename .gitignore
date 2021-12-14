@@ -40,3 +40,4 @@ script.sh
 /yarn-error.log
 /yarn.lock
 
+build

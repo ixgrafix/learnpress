@@ -1,4 +1,4 @@
-import { dispatch, select, apiFetch } from '@learnpress/data-controls';
+import { dispatch, select, apiFetch } from '../../../data-controls';
 import { select as wpSelect, dispatch as wpDispatch } from '@wordpress/data';
 import { useSelect } from '@wordpress/data';
 
@@ -13,8 +13,8 @@ const { camelCaseDashObjectKeys, Hook } = LP;
 /**
  * Set user data for app.
  *
- * @param key
- * @param data
+ * @param  key
+ * @param  data
  * @return {{type: string, data: *}}
  */
 export function setQuizData( key, data ) {
@@ -37,7 +37,7 @@ export function setQuizData( key, data ) {
 /**
  * Set question will display.
  *
- * @param questionId
+ * @param  questionId
  * @return {{type: string, data: *}}
  */
 export function setCurrentQuestion( questionId ) {
@@ -131,13 +131,13 @@ export function* submitQuiz() {
 		return;
 	}
 
-	let answered = getQuestionsSelectedAnswers();
+	const answered = getQuestionsSelectedAnswers();
 
-	if ( Object.keys(answered).length === 0 && lpQuizSettings.checkNorequizenroll == '1' ){
-		const data = JSON.parse(localStorage.getItem( `LP_Quiz_${ itemId }_Answered` ));
+	if ( Object.keys( answered ).length === 0 && lpQuizSettings.checkNorequizenroll == '1' ) {
+		const data = JSON.parse( localStorage.getItem( `LP_Quiz_${ itemId }_Answered` ) );
 
-		for ( let [k, v] of Object.entries(data) ) {
-			answered[k] = v.answered;
+		for ( const [ k, v ] of Object.entries( data ) ) {
+			answered[ k ] = v.answered;
 		}
 	}
 

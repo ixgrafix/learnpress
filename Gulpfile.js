@@ -14,7 +14,6 @@ const plumber = require( 'gulp-plumber' );
 const sourcemaps = require( 'gulp-sourcemaps' );
 const uglifycss = require( 'gulp-uglifycss' );
 const del = require( 'del' );
-const beep = require( 'beepbeep' );
 const readFile = require( 'read-file' );
 const wpPot = require( 'gulp-wp-pot' );
 
@@ -69,75 +68,9 @@ const releasesFiles = [
 	'!.babelrc',
 ];
 
-const errorHandler = ( r ) => {
-	notify.onError( '\n\n❌  ==> ERROR: <%= error.message %>\n' )( r );
-
-	beep();
-};
-
 // Clear cache.
 gulp.task( 'clearCache', ( done ) => {
 	return cache.clearAll( done );
-} );
-
-gulp.task( 'styles', () => {
-	return gulp
-		.src( [ 'assets/src/scss/**/*.scss' ] )
-		.pipe( plumber( errorHandler ) )
-		// .pipe( sourcemaps.init() )
-		.pipe(sass.sync().on('error', sass.logError))
-		// .pipe( sourcemaps.write( './' ) )
-		.pipe( lineec() )
-		.pipe( gulp.dest( 'assets/css' ) );
-} );
-
-// Watch sass
-gulp.task( 'watch', gulp.series( 'clearCache', () => {
-	gulp.watch( [ 'assets/src/scss/**/*.scss' ], gulp.parallel( 'styles' ) );
-} ) );
-
-// Min CSS frontend.
-gulp.task( 'mincss', () => {
-	return gulp
-		.src( [ 'assets/src/css/**/*.css', '!assets/src/css/vendor/*.css' ] )
-		.pipe( rename( { suffix: '.min' } ) )
-		.pipe( uglifycss() )
-		.pipe( lineec() )
-		.pipe( gulp.dest( 'assets/css' ) );
-} );
-
-// Clear JS folder.
-gulp.task( 'clearJsAdmin', () => {
-	return del( './assets/js/admin/**' );
-} );
-gulp.task( 'clearJsFrontend', () => {
-	return del( './assets/js/frontend/**' );
-} );
-
-// Min JS.
-gulp.task( 'minJsAdmin', () => {
-	return gulp
-		.src( [ 'assets/src/js/admin/**/*.js' ] )
-		.pipe(
-			rename( {
-				suffix: '.min',
-			} )
-		)
-		.pipe( uglify() )
-		.pipe( lineec() )
-		.pipe( gulp.dest( 'assets/js/admin' ) );
-} );
-gulp.task( 'minJsFrontend', () => {
-	return gulp
-		.src( [ 'assets/src/js/frontend/**/*.js' ] )
-		.pipe(
-			rename( {
-				suffix: '.min',
-			} )
-		)
-		.pipe( uglify() )
-		.pipe( lineec() )
-		.pipe( gulp.dest( 'assets/js/frontend' ) );
 } );
 
 // Clean folder to releases.
@@ -191,11 +124,6 @@ gulp.task(
 	'build',
 	gulp.series(
 		'clearCache',
-		'clearJsAdmin',
-		'clearJsFrontend',
-		'minJsAdmin',
-		'minJsFrontend',
-		// 'mincss',
 		'cleanReleases',
 		'copyReleases',
 		'updateReadme',
