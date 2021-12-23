@@ -389,7 +389,7 @@ const courseContinue = () => {
 		};
 		getResponse( formContinue ).then( function( result ) {
 			if ( result.status === 'success' ) {
-				formContinue.style.display = 'block';
+				formContinue.style.display = 'inline-block';
 				formContinue.action = result.data;
 			}
 		} );
